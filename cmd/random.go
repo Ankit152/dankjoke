@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -58,6 +59,7 @@ func getRandomJoke() {
 	joke := DankJoke{}
 	if err := json.Unmarshal(responseBytes, &joke); err != nil {
 		log.Printf("Couldnot unmarshall response %v", err)
+		os.Exit(1)
 	}
 	fmt.Println(string(joke.Joke))
 }
@@ -71,6 +73,7 @@ func getJokeData(baseAPI string) []byte {
 	)
 	if err != nil {
 		log.Printf("Could not get a dank joke. Error %v", err)
+		os.Exit(1)
 	}
 	request.Header.Add("Accept", "application/json")
 	request.Header.Add("User-Agent", "Dankjoke CLI (github.com/Ankit152/dankjoke)")
@@ -78,10 +81,12 @@ func getJokeData(baseAPI string) []byte {
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		log.Printf("Could not make a request. Error %v", err)
+		os.Exit(1)
 	}
 	responseBytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Printf("Couldnot read the response. Error occured %v", err)
+		os.Exit(1)
 	}
 	return responseBytes
 }
@@ -99,6 +104,7 @@ func randomJokeList(length int, jokeList []DankJoke) {
 	if length <= 0 {
 		err := fmt.Errorf("No joke found with this term")
 		fmt.Println(err.Error())
+		os.Exit(1)
 	} else {
 		index := min + rand.Intn(max-min)
 		fmt.Println(jokeList[index].Joke)
@@ -112,11 +118,13 @@ func getRandomJokeDataWithTerm(jokeTerm string) (int, []DankJoke) {
 	jokeWithTerm := SearchResult{}
 	if err := json.Unmarshal(responseBytes, &jokeWithTerm); err != nil {
 		log.Printf("Couldnot unmarshall response %v", err)
+		os.Exit(1)
 	}
 
 	jokes := []DankJoke{}
 	if err := json.Unmarshal(jokeWithTerm.Results, &jokes); err != nil {
 		log.Printf("Couldnot unrmashall Joke with Terms")
+		os.Exit(1)
 	}
 	return jokeWithTerm.TotalJokes, jokes
 }
